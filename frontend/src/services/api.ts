@@ -8,6 +8,11 @@ export interface User {
   address: string
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant"
+  content: string
+}
+
 export async function fetchUsers(): Promise<User[]> {
   const res = await fetch(`${BASE_URL}/users/`)
   if (!res.ok) throw new Error("Failed to fetch users")
@@ -19,9 +24,15 @@ export async function deleteUser(id: number): Promise<void> {
   if (!res.ok) throw new Error("Failed to delete user")
 }
 
-// Placeholder — will be wired to the LangChain agent later
-export async function sendChatMessage(message: string): Promise<string> {
-  return Promise.resolve(
-    "AI agent is not yet connected. Your message: " + message
-  )
+export async function sendChatMessage(
+  messages: ChatMessage[]
+): Promise<string> {
+  const res = await fetch(`${BASE_URL}/chat/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  })
+  if (!res.ok) throw new Error("Failed to reach AI agent")
+  const data = await res.json()
+  return data.reply
 }

@@ -4,6 +4,7 @@ from sqlmodel import Session
 from app.db.database import create_db_and_tables, engine
 from app.db.models import User
 from app.api.routes_users import router as users_router
+from app.api.routes_chat import router as chat_router
 
 app = FastAPI()
 
@@ -16,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(users_router)
+app.include_router(chat_router)
 
 @app.on_event("startup")
 def on_startup():
@@ -28,12 +30,7 @@ def root():
 @app.get("/create-test-user")
 def create_test_user():
     with Session(engine) as session:
-        user = User(
-            name="Reda",
-            email="reda@test.com",
-            phone="0600000000",
-            address="Tangier"
-        )
+        user = User(name="Reda", email="reda@test.com", phone="0600000000", address="Tangier")
         session.add(user)
         session.commit()
         session.refresh(user)

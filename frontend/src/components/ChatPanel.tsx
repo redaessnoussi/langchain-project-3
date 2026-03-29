@@ -26,12 +26,15 @@ export default function ChatPanel() {
     const text = input.trim()
     if (!text || loading) return
 
-    setMessages((prev) => [...prev, { role: "user", content: text }])
+    const newUserMsg: Message = { role: "user", content: text }
+    const updatedMessages = [...messages, newUserMsg]
+
+    setMessages(updatedMessages)
     setInput("")
     setLoading(true)
 
     try {
-      const reply = await sendChatMessage(text)
+      const reply = await sendChatMessage(updatedMessages) // pass full history
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
     } catch {
       setMessages((prev) => [
