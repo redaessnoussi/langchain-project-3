@@ -2,6 +2,13 @@ from sqlmodel import Session, select
 from app.db.models import User
 from app.schemas.user_schema import UserUpdate
 
+def create_user(session: Session, data: dict) -> User:
+    user = User(**data)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
+
 def get_all_users(session: Session):
     return session.exec(select(User)).all()
 

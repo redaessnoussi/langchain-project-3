@@ -27,6 +27,8 @@ export interface Ticket {
   agent: string
   resolution_time: number | null
   date: string
+  resolved_at: string
+  status: "open" | "resolved"
 }
 
 export interface TicketsResponse {
@@ -52,6 +54,16 @@ export async function fetchUsers(): Promise<User[]> {
   return res.json()
 }
 
+export async function updateUser(id: number, data: Partial<Omit<User, "id">>): Promise<User> {
+  const res = await fetch(`${BASE_URL}/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error("Failed to update user")
+  return res.json()
+}
+
 export async function deleteUser(id: number): Promise<void> {
   const res = await fetch(`${BASE_URL}/users/${id}`, { method: "DELETE" })
   if (!res.ok) throw new Error("Failed to delete user")
@@ -73,6 +85,8 @@ export async function fetchTickets(
   length = 50,
   category?: string,
   ticketType?: string,
+  status?: string,
+  search?: string,
 ): Promise<TicketsResponse> {
   const params = new URLSearchParams({
     offset: String(offset),
@@ -80,6 +94,8 @@ export async function fetchTickets(
   })
   if (category) params.set("category", category)
   if (ticketType) params.set("type", ticketType)
+  if (status) params.set("status", status)
+  if (search) params.set("search", search)
   const res = await fetch(`${BASE_URL}/tickets/?${params}`)
   if (!res.ok) throw new Error("Failed to fetch tickets")
   return res.json()

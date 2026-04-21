@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
 import { Button } from "@/components/ui/button"
 import { sendChatMessage } from "@/services/api"
 
@@ -11,7 +12,7 @@ export default function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your AI assistant. How can I help you?",
+      content: "Hi! I'm your IT support AI. Ask me about any IT issue and I'll search our knowledge base of 27,602 resolved tickets to help.",
     },
   ])
   const [input, setInput] = useState("")
@@ -72,7 +73,13 @@ export default function ChatPanel() {
                   : "rounded-bl-sm bg-muted text-foreground"
               }`}
             >
-              {msg.content}
+              {msg.role === "assistant" ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:mt-2 prose-headings:mb-1">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}

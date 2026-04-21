@@ -39,6 +39,8 @@ class Ticket(BaseModel):
     agent: str
     resolution_time: Optional[float]
     date: str
+    resolved_at: str
+    status: str  # "open" | "resolved"
 
 
 class TicketsResponse(BaseModel):
@@ -81,6 +83,7 @@ def _to_float(val) -> Optional[float]:
 
 
 def _row_to_ticket(df_idx: int, row: dict) -> Ticket:
+    resolved_at = _clean(row.get("resolved_at"))
     return Ticket(
         row_idx=df_idx,
         number=_clean(row.get("number")),
@@ -95,14 +98,34 @@ def _row_to_ticket(df_idx: int, row: dict) -> Ticket:
         agent=_clean(row.get("agent")),
         resolution_time=_to_float(row.get("resolution_time")),
         date=_clean(row.get("date")),
+        resolved_at=resolved_at,
+        status="resolved" if resolved_at else "open",
     )
 
 
-def _filter_df(df: pd.DataFrame, category: Optional[str], ticket_type: Optional[str]) -> pd.DataFrame:
+def _filter_df(
+    df: pd.DataFrame,
+    category: Optional[str],
+    ticket_type: Optional[str],
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+) -> pd.DataFrame:
     if category:
         df = df[df["category"].str.lower() == category.lower()]
     if ticket_type:
         df = df[df["type"].str.lower() == ticket_type.lower()]
+    if status == "resolved":
+        df = df[df["resolved_at"].fillna("").apply(lambda x: _clean(x) != "")]
+    elif status == "open":
+        df = df[df["resolved_at"].fillna("").apply(lambda x: _clean(x) == "")]
+    if search:
+        q = search.lower()
+        mask = (
+            df["number"].fillna("").str.lower().str.contains(q, regex=False)
+            | df["short_description"].fillna("").str.lower().str.contains(q, regex=False)
+            | df["content"].fillna("").str.lower().str.contains(q, regex=False)
+        )
+        df = df[mask]
     return df
 
 
@@ -137,8 +160,10 @@ def list_tickets(
     length: int = Query(50, ge=1, le=100),
     category: Optional[str] = Query(None),
     ticket_type: Optional[str] = Query(None, alias="type"),
+    status: Optional[str] = Query(None, pattern="^(open|resolved)$"),
+    search: Optional[str] = Query(None, max_length=200),
 ):
-    df = _filter_df(get_df(), category, ticket_type)
+    df = _filter_df(get_df(), category, ticket_type, status, search)
     page_df = df.iloc[offset: offset + length]
     tickets = [_row_to_ticket(int(idx), row.to_dict()) for idx, row in page_df.iterrows()]
     return TicketsResponse(tickets=tickets, total=len(df), offset=offset, length=len(tickets))

@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session
 from app.db.database import engine
 from app.db.models import User
-from app.schemas.user_schema import UserUpdate
-from app.services.user_service import get_all_users, get_user_by_id, update_user, delete_user
+from app.schemas.user_schema import UserUpdate, UserCreate
+from app.services.user_service import get_all_users, get_user_by_id, create_user, update_user, delete_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -14,6 +14,10 @@ def get_session():
 @router.get("/", response_model=list[User])
 def list_users(session: Session = Depends(get_session)):
     return get_all_users(session)
+
+@router.post("/", response_model=User, status_code=201)
+def create_user_route(data: UserCreate, session: Session = Depends(get_session)):
+    return create_user(session, data.model_dump())
 
 @router.get("/{user_id}", response_model=User)
 def get_user(user_id: int, session: Session = Depends(get_session)):
