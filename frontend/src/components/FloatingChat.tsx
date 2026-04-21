@@ -5,23 +5,12 @@ import {
   RiSendPlaneLine,
   RiRobot2Line,
 } from "@remixicon/react"
-
-interface Message {
-  role: "user" | "assistant"
-  content: string
-}
-
-const DEMO_RESPONSES = [
-  "I found 8 similar tickets in the knowledge base. The most common fix for VPN disconnections is updating the client and reconfiguring split-tunneling.",
-  "Based on past incidents, this issue is usually resolved by restarting the affected service and clearing the application cache.",
-  "This looks like an Active Directory sync issue. I can see 3 resolved tickets with the same symptoms — resetting the user's token fixed it in all cases.",
-  "Let me search the knowledge base for similar cases... Found 12 matching tickets. The resolution involved escalating to the network team and patching the firmware.",
-  "That's a known issue with SAP login after the recent update. The fix is to clear browser cookies and re-add the site to trusted zones.",
-]
+import { sendChatMessage } from "@/services/api"
+import type { ChatMessage } from "@/services/api"
 
 export default function FloatingChat() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
@@ -40,16 +29,22 @@ export default function FloatingChat() {
     const text = input.trim()
     if (!text || loading) return
 
-    setMessages((prev) => [...prev, { role: "user", content: text }])
+    const updated: ChatMessage[] = [...messages, { role: "user", content: text }]
+    setMessages(updated)
     setInput("")
     setLoading(true)
 
-    await new Promise((r) => setTimeout(r, 1200))
-
-    const reply =
-      DEMO_RESPONSES[Math.floor(Math.random() * DEMO_RESPONSES.length)]
-    setMessages((prev) => [...prev, { role: "assistant", content: reply }])
-    setLoading(false)
+    try {
+      const reply = await sendChatMessage(updated)
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, the backend is unreachable. Make sure the server is running." },
+      ])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

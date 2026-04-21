@@ -3,6 +3,15 @@ uvicorn
 sqlmodel
 langchain
 langchain-openai
+langchain-qdrant
+langchain-community
+langchain-text-splitters
 pydantic
+pydantic-settings
 requests
 python-dotenv
+qdrant-client
+pypdf
+python-multipart
+pandas
+pyarrow

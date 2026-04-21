@@ -4,6 +4,7 @@ from langchain_core.tools import tool
 from sqlmodel import Session, select
 from app.db.database import engine
 from app.db.models import User
+from app.ai.rag import search_knowledge_base as _search_kb
 
 
 @tool
@@ -70,3 +71,11 @@ def delete_user(user_id: int) -> str:
         session.delete(user)
         session.commit()
         return f"User '{name}' (ID: {user_id}) has been deleted."
+
+
+@tool
+def search_knowledge_base(query: str) -> str:
+    """Search the IT helpdesk knowledge base for past tickets and resolutions related to a user's issue.
+    Use this whenever the user describes a technical problem, error, or IT-related question.
+    Returns the most semantically similar resolved tickets with their solutions."""
+    return _search_kb(query, k=5)
