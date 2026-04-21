@@ -110,6 +110,8 @@ def _filter_df(
     status: Optional[str] = None,
     search: Optional[str] = None,
 ) -> pd.DataFrame:
+    # Drop duplicate ticket numbers before any filtering
+    df = df.drop_duplicates(subset=["number"], keep="first")
     if category:
         df = df[df["category"].str.lower() == category.lower()]
     if ticket_type:

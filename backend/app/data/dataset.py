@@ -86,6 +86,10 @@ def _download_parquet_shards(urls: list[str]) -> pd.DataFrame:
     if not frames:
         return pd.DataFrame()
     df = pd.concat(frames, ignore_index=True)
+    before = len(df)
+    df = df.drop_duplicates(subset=["number"], keep="first").reset_index(drop=True)
+    if len(df) < before:
+        logger.info("Dropped %d duplicate rows from shards", before - len(df))
     df.to_parquet(CACHE_PATH, index=False)
     logger.info("Dataset cached → %s  (%d rows, %d cols)", CACHE_PATH, len(df), len(df.columns))
     return df
@@ -186,6 +190,10 @@ def get_df() -> pd.DataFrame:
             logger.info("Loading dataset from cache: %s", CACHE_PATH)
             try:
                 _df = pd.read_parquet(CACHE_PATH)
+                before = len(_df)
+                _df = _df.drop_duplicates(subset=["number"], keep="first").reset_index(drop=True)
+                if len(_df) < before:
+                    logger.info("Dropped %d duplicate ticket numbers", before - len(_df))
                 logger.info("Dataset loaded (%d rows)", len(_df))
                 if len(_df) < TOTAL_ROWS * 0.95:  # less than 95% of expected rows → partial
                     logger.warning(

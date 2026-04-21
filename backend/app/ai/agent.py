@@ -6,7 +6,7 @@ from app.ai.tools import get_all_users, get_user_by_id, update_user, delete_user
 
 load_dotenv()
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 tools = [get_all_users, get_user_by_id, update_user, delete_user, search_knowledge_base]
 

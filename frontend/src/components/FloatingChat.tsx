@@ -5,6 +5,7 @@ import {
   RiSendPlaneLine,
   RiRobot2Line,
 } from "@remixicon/react"
+import ReactMarkdown from "react-markdown"
 import { sendChatMessage } from "@/services/api"
 import type { ChatMessage } from "@/services/api"
 
@@ -93,7 +94,13 @@ export default function FloatingChat() {
                       : "rounded-bl-sm bg-muted text-foreground"
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === "user" ? (
+                    msg.content
+                  ) : (
+                    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-p:leading-relaxed prose-ol:my-1 prose-ol:pl-4 prose-ul:my-1 prose-ul:pl-4 prose-li:my-0.5 prose-strong:font-semibold prose-headings:font-semibold prose-headings:my-1">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
