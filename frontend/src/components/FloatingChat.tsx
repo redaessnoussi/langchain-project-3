@@ -15,7 +15,7 @@ export default function FloatingChat() {
     {
       role: "assistant",
       content:
-        "Hi! I'm your IT support AI. Ask me about any IT issue and I'll search our knowledge base of 27,602 resolved tickets to help.",
+        "Hi! I'm your IT support AI. Ask me about any IT issue and I'll search our knowledge base of 16K resolved tickets to help.",
     },
   ])
   const [input, setInput] = useState("")
